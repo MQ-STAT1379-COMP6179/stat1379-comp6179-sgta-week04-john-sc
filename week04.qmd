@@ -1,7 +1,7 @@
 ---
 title: "STAT1379/COMP6179: ST4DS"
 subtitle: "Week 4 SGTA: Student template"
-author: "Your Name Here"
+author: "John Scollin"
 execute:
   echo: true
   eval: true
@@ -11,6 +11,7 @@ format: html
 ```{r setup, include=FALSE}
 library(knitr)
 library(tidyverse)
+# install.packages("babynames")
 library(babynames)
 ```
 
@@ -53,7 +54,7 @@ str(x)
 - Why might `typeof()` give different results?
 
 *Write your thoughts here:*
-
+Sequence looks as if it might allow floating point value. 1:6 integer only
 
 
 #### Atomic Vectors - Integers  
@@ -80,8 +81,8 @@ str(x)
 
 **Your observations:**
 
-- What happens when you mix integers and doubles in a vector?
-- What does the `L` suffix do?
+- What happens when you mix integers and doubles in a vector? Coercion according to Rs rules
+- What does the `L` suffix do? Makes it an integer
 
 *Write your thoughts here:*
 
@@ -118,10 +119,13 @@ cat("This", "unit", "is", "great.", "Do", "you", "agree?", sep = "\t")
 cat("This", "unit", "is", "great.", "Do", "you", "agree?", sep = "\n")
 cat("This", "unit", "is", "great.", "\n", "Do", "you", "agree?")
 cat("This ", "unit ", "is ", "great.", "\n", "Do ", "you ", "agree? ", sep = "")
+cat("This", "unit", "is", "great.", "Do", "you", "agree?", sep = "\t")
 
 glue::glue("This unit is great. Do you agree?")
 glue::glue("This unit is great.
            Do you agree?")
+gtext <- glue::glue("This unit is great. Do you agree?")
+typeof(gtext)
 ```
 
 **Your task:**
@@ -129,7 +133,7 @@ glue::glue("This unit is great.
 - Compare the different methods for combining strings
 - What's the difference between `paste()`, `cat()`, and `glue()`?
 
-*Write your analysis here:*
+*Write your analysis here:* They are different. Paste seems like concatenate in other languages
 
 
 
@@ -169,9 +173,11 @@ str(x)
 **Your task:**
 
 - Explain why `1 <- 1` causes an error
+1 cannot be a variable and <- requires a variable on LHS
 - What's the difference between `=` and `==`?
 
 *Write your explanation here:*
+= assigns == compares and reyruns T/F
 
 
 
@@ -200,7 +206,7 @@ as.character(x)
 - How are factors different from character vectors?
 
 *Write your thoughts here:*
-
+I worked thru the boof section. Mr Grolemind.
 
 
 ### Working with Matrices and Arrays  
@@ -225,7 +231,8 @@ m
 - How does R fill matrices by default?
 
 *Write your answer here:*
-
+By default it reads the values as if they are column_vector1, column_cevtor_2 , ...
+ByRows = TRUE makes it read the flat vector as if it is one row vector followed by another
 
 
 #### Arrays  
@@ -337,6 +344,7 @@ x
 - When would you use `tribble()` instead of `tibble()`?
 
 *Write your thoughts here:*
+Use tribble to input a smallish grid in a nice order to read and write
 
 
 
@@ -368,6 +376,7 @@ waldo::compare(x, x_delim)
 - Are there any differences between `read_csv()` and `read_delim()` results?
 
 *Write your observations here:*
+Waldo says no difference
 
 
 
@@ -400,7 +409,7 @@ waldo::compare(weather_data, weather_check)
 - Why is it good practice to read the data back after saving?
 
 *Write your thoughts here:*
-
+my_weather_data.csv was created in the ./data folder
 
 
 ### Selecting and Modifying Values  
@@ -513,6 +522,7 @@ str(x)
 is.na(x)                    # Test for missing values
 NA == NA                    # Why doesn't this work?
 is.na(NA) == is.na(NA)     # Proper way to compare
+is.na("NaN")
 
 # More examples
 values <- c(1, 2, NA, 4, 5)
@@ -527,11 +537,12 @@ mean(values, na.rm = TRUE)  # Same for mean
 
 ## Introduction to dplyr  
 
-Load the `babynames` dataset and explore the main dplyr verbs. Each verb performs a specific data manipulation task.
+Load the `babynames dataset and explore the main dplyr verbs. Each verb performs a specific data manipulation task.
 
 ### Basic dplyr Operations  
 
 ```{r dplyr-basics, eval=FALSE}
+# install.packages("babynames")
 library(babynames)
 library(tidyverse)
 
@@ -684,7 +695,7 @@ filter(babynames, name == Sea)
 **Your corrected code:**
 ```{r fix-code-student, eval=FALSE}
 # Fixed code here:
-
+filter(babynames, name == "Sea")
 
 ```
 
@@ -698,10 +709,14 @@ Which name was the most popular for a single gender in a single year? Compare ar
 
 ```{r popular-names-student, eval=FALSE}
 # Your code to find highest proportion:
-
+babynames |>
+  arrange(desc(prop)) |>
+  head(5)
 
 # Your code to find highest count:
-
+babynames |>
+  arrange(desc(n)) |>
+  head(5)
 
 ```
 
@@ -720,7 +735,11 @@ Write a pipeline that will:
 
 ```{r girls-2017-student, eval=FALSE}
 # Your pipeline here:
-
+babynames |>
+  filter(sex == 'F' & year == 2017) |>
+  select(name, n) |>
+  arrange(desc(n)) |>
+  head(5)
 
 ```
 
@@ -803,8 +822,11 @@ cholesterol_data
 
 ```{r cholesterol-solution-student, eval=FALSE}
 # Task 1 - Convert to long format:
-
-
+cholesterol_tidy <- cholesterol_data |> pivot_longer(cols = c("oat_bran_free", "oat_bran")
+                                 ,names_to = "diet"
+                                 ,values_to = "cholesterol"
+                                 )
+cholesterol_tidy
 # Task 2 - Calculate summary statistics:
 
 
@@ -831,7 +853,12 @@ d. Store back in appropriate place
 
 ```{r calculate-rates-student, eval=FALSE}
 # Your approach for table2:
-
+table2 |>
+  pivot_wider(
+    names_from = type,           # Column to get names from
+    values_from = count,         # Column to get values from
+  ) |>
+  head(5)
 
 # Your approach for table3:
 
